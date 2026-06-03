@@ -3,6 +3,32 @@ import torch.nn as nn
 from torchvision.models import resnet18, resnet34, resnet50
 
 
+def _build_resnet(resnet_layers):
+    """Build a torchvision ResNet backbone without implicit network access.
+
+    ReSplat loads its own checkpoint immediately after model construction.  The
+    original code requested torchvision's ImageNet-pretrained ResNet weights at
+    construction time, which can trigger a download in fresh/offline experiment
+    environments and fail before the ReSplat checkpoint is loaded.  Constructing
+    the backbone with random weights is enough here because the following
+    checkpoint load overwrites the model parameters.
+    """
+    builders = {
+        18: resnet18,
+        34: resnet34,
+        50: resnet50,
+    }
+    if resnet_layers not in builders:
+        raise NotImplementedError
+
+    builder = builders[resnet_layers]
+    try:
+        return builder(weights=None)
+    except TypeError:
+        # Compatibility with older torchvision releases.
+        return builder(pretrained=False)
+
+
 class ResNetFeatureWarpper(nn.Module):
     def __init__(self, shallow_resnet_feature=False,
                  resnet_layers=18,
@@ -11,14 +37,7 @@ class ResNetFeatureWarpper(nn.Module):
 
         self.shallow_resnet_feature = shallow_resnet_feature
 
-        if resnet_layers == 18:
-            resnet = resnet18(pretrained=True)
-        elif resnet_layers == 34:
-            resnet = resnet34(pretrained=True)
-        elif resnet_layers == 50:
-            resnet = resnet50(pretrained=True)
-        else:
-            raise NotImplementedError
+        resnet = _build_resnet(resnet_layers)
 
         self.conv1 = resnet.conv1
         self.bn1 = resnet.bn1
@@ -44,4 +63,3 @@ class ResNetFeatureWarpper(nn.Module):
             out.append(x)
 
         return out
-
