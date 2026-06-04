@@ -771,6 +771,7 @@ class EncoderReSplat(Encoder[EncoderReSplatCfg]):
         init_gaussians,
         renderer,
         context_remain=None,
+        step_callback=None,
         ):
         render_output = []
         render_input_views = []
@@ -1071,6 +1072,11 @@ class EncoderReSplat(Encoder[EncoderReSplatCfg]):
 
             gaussian_output.append(prev_gaussians)
 
+            if step_callback is not None:
+                should_continue = step_callback(i + 1, prev_gaussians)
+                if not should_continue:
+                    break
+
             # render target images
             if target is not None:
                 render_img = renderer.forward(
@@ -1124,5 +1130,3 @@ class EncoderReSplat(Encoder[EncoderReSplatCfg]):
 def RGB2SH(rgb):
     C0 = 0.28209479177387814
     return (rgb - 0.5) / C0
-
-
