@@ -85,6 +85,7 @@ class GSplatDecoderSplattingCUDA(Decoder[GSplatDecoderSplattingCUDACfg]):
             sparse_grad=False,
             render_mode="RGB+ED",
             covars=covars,
+            backgrounds=self.background_color,
         )
 
         color = render_colors[..., :3].permute(0, 1, 4, 2, 3)  # [B, V, 3, H, W]
