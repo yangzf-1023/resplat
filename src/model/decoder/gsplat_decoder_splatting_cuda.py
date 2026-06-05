@@ -85,7 +85,11 @@ class GSplatDecoderSplattingCUDA(Decoder[GSplatDecoderSplattingCUDACfg]):
             sparse_grad=False,
             render_mode="RGB+ED",
             covars=covars,
-            backgrounds=self.background_color,
+            # gsplat 1.x appends the depth background internally for RGB+ED
+            # after validating against the RGB channel count, so a non-None
+            # background trips its own shape assertion.  ReSplat/QUEEN use black
+            # backgrounds in these diagnostics, matching gsplat's None default.
+            backgrounds=None,
         )
 
         color = render_colors[..., :3].permute(0, 1, 4, 2, 3)  # [B, V, 3, H, W]
