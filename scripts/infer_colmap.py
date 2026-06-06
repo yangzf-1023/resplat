@@ -77,6 +77,7 @@ MODEL_PRESETS = {
         "overrides": [
             "model.encoder.gaussian_adapter.gaussian_scale_max=3.",
             "model.encoder.depth_pred_half_res=true",
+            "model.encoder.no_crop_image=true",
         ],
         "num_context": 16,
         "num_refine": 2,
